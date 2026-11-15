@@ -1,5 +1,22 @@
-// [제공] 부모 CourseList로부터 Props를 전달받는 자식 컴포넌트입니다.
-export default function CourseItem({ course, onDelete, onToggle }) {
+import { useState } from 'react';
+
+export default function CourseItem({ course, onDelete, onToggle, onEdit }) {
+  // 수정 모드
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(course.name);
+
+  function handleSave() {
+    const name = editName.trim();
+    if (name === '') return;
+    onEdit(course.id, name);
+    setIsEditing(false);
+  }
+
+  function handleCancel() {
+    setEditName(course.name);
+    setIsEditing(false);
+  }
+
   return (
     <div className="course-row">
       <div className="course-main">
@@ -11,9 +28,18 @@ export default function CourseItem({ course, onDelete, onToggle }) {
           aria-label={`${course.name} 완료 여부`}
         />
         <div>
-          <div className={`course-title ${course.completed ? "done" : ""}`}>
-            {course.name}
-          </div>
+          {isEditing ? (
+            <input
+              className="input edit-input"
+              value={editName}
+              onChange={event => setEditName(event.target.value)}
+              aria-label="과목명 수정"
+            />
+          ) : (
+            <div className={`course-title ${course.completed ? "done" : ""}`}>
+              {course.name}
+            </div>
+          )}
           <div className="course-id">Course #{course.id}</div>
         </div>
       </div>
@@ -21,13 +47,23 @@ export default function CourseItem({ course, onDelete, onToggle }) {
         <span className="category">{course.category}</span>
       </div>
       <div className="actions">
-        <button
-          className="btn danger"
-          type="button"
-          onClick={() => onDelete(course.id)}
-        >
-          Delete
-        </button>
+        {isEditing ? (
+          <>
+            <button className="btn primary tiny" type="button" onClick={handleSave}>Save</button>
+            <button className="btn secondary tiny" type="button" onClick={handleCancel}>Cancel</button>
+          </>
+        ) : (
+          <>
+            <button className="btn secondary tiny" type="button" onClick={() => setIsEditing(true)}>Edit</button>
+            <button
+              className="btn danger"
+              type="button"
+              onClick={() => onDelete(course.id)}
+            >
+              Delete
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
